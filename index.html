@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FinTrack - Manajemen Keuangan Pribadi</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="logo">
+          <i class="fa-solid fa-wallet"></i>
+          <h2>FinTrack</h2>
+        </div>
+
+        <ul class="menu">
+          <li>
+            <a href="#dashboard"
+              ><i class="fa-solid fa-chart-line"></i> Dashboard</a
+            >
+          </li>
+          <li>
+            <a href="#transaction-section"
+              ><i class="fa-solid fa-plus"></i> Transaksi</a
+            >
+          </li>
+          <li>
+            <a href="#budget-section"
+              ><i class="fa-solid fa-money-bill-wave"></i> Budget</a
+            >
+          </li>
+          <li>
+            <a href="#saving-section"
+              ><i class="fa-solid fa-piggy-bank"></i> Tabungan</a
+            >
+          </li>
+          <li>
+            <a href="#history-section"
+              ><i class="fa-solid fa-clock-rotate-left"></i> Riwayat</a
+            >
+          </li>
+        </ul>
+      </aside>
+
+      <!-- MAIN -->
+      <main class="main-content">
+        <!-- NAVBAR -->
+        <nav class="navbar">
+          <div>
+            <h1>Dashboard Keuangan</h1>
+            <p>Kelola keuanganmu dengan lebih cerdas 💡</p>
+          </div>
+
+          <div class="nav-actions">
+            <button id="themeToggle" class="theme-btn">
+              <i class="fa-solid fa-moon"></i>
+            </button>
+          </div>
+        </nav>
+
+        <!-- DASHBOARD -->
+        <section id="dashboard">
+          <div class="stats-grid">
+            <div class="card stat-card balance">
+              <div>
+                <h4>Total Saldo</h4>
+                <h2 id="balance">Rp 0</h2>
+              </div>
+              <i class="fa-solid fa-wallet"></i>
+            </div>
+
+            <div class="card stat-card income">
+              <div>
+                <h4>Pemasukan</h4>
+                <h2 id="income">Rp 0</h2>
+              </div>
+              <i class="fa-solid fa-arrow-trend-up"></i>
+            </div>
+
+            <div class="card stat-card expense">
+              <div>
+                <h4>Pengeluaran</h4>
+                <h2 id="expense">Rp 0</h2>
+              </div>
+              <i class="fa-solid fa-arrow-trend-down"></i>
+            </div>
+
+            <div class="card stat-card saving">
+              <div>
+                <h4>Tabungan</h4>
+                <h2 id="savingTotal">Rp 0</h2>
+              </div>
+              <i class="fa-solid fa-piggy-bank"></i>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="card chart-card">
+              <div class="card-header">
+                <h3>Statistik Keuangan</h3>
+              </div>
+
+              <canvas id="financeChart"></canvas>
+            </div>
+
+            <div class="card recent-card">
+              <div class="card-header">
+                <h3>Transaksi Terbaru</h3>
+              </div>
+
+              <div id="recentTransactions"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TRANSACTION FORM -->
+        <section id="transaction-section">
+          <div class="card form-card">
+            <div class="card-header">
+              <h3>Tambah Transaksi</h3>
+            </div>
+
+            <form id="transactionForm">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Nama Transaksi</label>
+                  <input
+                    type="text"
+                    id="title"
+                    placeholder="Contoh: Gaji Bulanan"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label>Nominal</label>
+                  <input type="number" id="amount" placeholder="500000" />
+                </div>
+
+                <div class="form-group">
+                  <label>Kategori</label>
+                  <select id="category">
+                    <option value="">Pilih kategori</option>
+                    <option>Makanan</option>
+                    <option>Transportasi</option>
+                    <option>Belanja</option>
+                    <option>Hiburan</option>
+                    <option>Pendidikan</option>
+                    <option>Kesehatan</option>
+                    <option>Investasi</option>
+                    <option>Lainnya</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>Tanggal</label>
+                  <input type="date" id="date" />
+                </div>
+
+                <div class="form-group">
+                  <label>Jenis</label>
+                  <select id="type">
+                    <option value="">Pilih jenis</option>
+                    <option value="income">Pemasukan</option>
+                    <option value="expense">Pengeluaran</option>
+                    <option value="saving">Tabungan</option>
+                  </select>
+                </div>
+              </div>
+
+              <button type="submit" class="primary-btn">
+                <i class="fa-solid fa-plus"></i>
+                Simpan Transaksi
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <!-- BUDGET -->
+        <section id="budget-section">
+          <div class="card">
+            <div class="card-header">
+              <h3>Budget Bulanan</h3>
+            </div>
+
+            <div class="budget-container">
+              <div class="budget-input">
+                <input
+                  type="number"
+                  id="budgetInput"
+                  placeholder="Set budget bulanan"
+                />
+                <button id="saveBudget" class="primary-btn">
+                  Simpan Budget
+                </button>
+              </div>
+
+              <div class="budget-info">
+                <h2 id="budgetAmount">Rp 0</h2>
+                <p id="budgetStatus">Belum ada budget</p>
+
+                <div class="progress-container">
+                  <div class="progress-bar" id="budgetProgress"></div>
+                </div>
+
+                <span id="budgetPercentage">0%</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SAVING TARGET -->
+        <section id="saving-section">
+          <div class="card">
+            <div class="card-header">
+              <h3>Target Menabung</h3>
+            </div>
+
+            <div class="saving-grid">
+              <div class="saving-form">
+                <input
+                  type="number"
+                  id="savingTargetInput"
+                  placeholder="Target tabungan"
+                />
+                <button id="saveTarget" class="primary-btn">
+                  Simpan Target
+                </button>
+              </div>
+
+              <div class="saving-progress">
+                <h2 id="savingTargetText">Rp 0</h2>
+
+                <div class="progress-container">
+                  <div class="progress-bar green" id="savingProgress"></div>
+                </div>
+
+                <span id="savingPercentage">0%</span>
+                <p id="savingEstimate">Estimasi belum tersedia</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- HISTORY -->
+        <section id="history-section">
+          <div class="card">
+            <div class="card-header">
+              <h3>Riwayat Transaksi</h3>
+            </div>
+
+            <div class="filters">
+              <input
+                type="text"
+                id="searchInput"
+                placeholder="Cari transaksi..."
+              />
+
+              <select id="filterCategory">
+                <option value="">Semua Kategori</option>
+                <option>Makanan</option>
+                <option>Transportasi</option>
+                <option>Belanja</option>
+                <option>Hiburan</option>
+                <option>Pendidikan</option>
+                <option>Kesehatan</option>
+                <option>Investasi</option>
+                <option>Lainnya</option>
+              </select>
+
+              <input type="date" id="filterDate" />
+
+              <select id="sortTransaction">
+                <option value="latest">Terbaru</option>
+                <option value="oldest">Terlama</option>
+              </select>
+            </div>
+
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nama</th>
+                    <th>Kategori</th>
+                    <th>Tanggal</th>
+                    <th>Jenis</th>
+                    <th>Nominal</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+
+                <tbody id="transactionList"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="footer">
+          <p>© 2026 FinTrack — Personal Finance Dashboard</p>
+        </footer>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
