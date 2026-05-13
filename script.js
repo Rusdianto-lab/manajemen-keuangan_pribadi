@@ -5,6 +5,8 @@ const balanceEl = document.getElementById("balance");
 const incomeEl = document.getElementById("income");
 const expenseEl = document.getElementById("expense");
 const savingTotalEl = document.getElementById("savingTotal");
+const emergencyTotalEl = document.getElementById("emergencyTotal");
+const investmentTotalEl = document.getElementById("investmentTotal");
 
 const recentTransactions = document.getElementById("recentTransactions");
 
@@ -23,30 +25,68 @@ const budgetPercentage = document.getElementById("budgetPercentage");
 
 const savingTargetInput = document.getElementById("savingTargetInput");
 const saveTargetBtn = document.getElementById("saveTarget");
-
 const savingTargetText = document.getElementById("savingTargetText");
 const savingProgress = document.getElementById("savingProgress");
 const savingPercentage = document.getElementById("savingPercentage");
 const savingEstimate = document.getElementById("savingEstimate");
 
-const themeToggle = document.getElementById("themeToggle");
+const emergencyTargetInput = document.getElementById("emergencyTargetInput");
+const saveEmergencyTargetBtn = document.getElementById("saveEmergencyTarget");
+const emergencyTargetText = document.getElementById("emergencyTargetText");
+const emergencyProgress = document.getElementById("emergencyProgress");
+const emergencyPercentage = document.getElementById("emergencyPercentage");
+const emergencyEstimate = document.getElementById("emergencyEstimate");
+
+const investmentTargetInput = document.getElementById("investmentTargetInput");
+const saveInvestmentTargetBtn = document.getElementById("saveInvestmentTarget");
+const investmentTargetText = document.getElementById("investmentTargetText");
+const investmentProgress = document.getElementById("investmentProgress");
+const investmentPercentage = document.getElementById("investmentPercentage");
+const investmentEstimate = document.getElementById("investmentEstimate");
+
+const debtForm = document.getElementById("debtForm");
+const debtList = document.getElementById("debtList");
+const debtTitleInput = document.getElementById("debtTitle");
+const debtPartnerInput = document.getElementById("debtPartner");
+const debtAmountInput = document.getElementById("debtAmount");
+const debtTypeInput = document.getElementById("debtType");
+const debtDateInput = document.getElementById("debtDate");
+const debtStatusInput = document.getElementById("debtStatus");
+const debtSubmitBtn = debtForm.querySelector("button[type='submit']");
 
 let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+let debts = JSON.parse(localStorage.getItem("debts")) || [];
 let budget = JSON.parse(localStorage.getItem("budget")) || 0;
 let savingTarget = JSON.parse(localStorage.getItem("savingTarget")) || 0;
+let emergencyTarget = JSON.parse(localStorage.getItem("emergencyTarget")) || 0;
+let investmentTarget =
+  JSON.parse(localStorage.getItem("investmentTarget")) || 0;
 
 let editId = null;
+let debtEditId = null;
 
 const ctx = document.getElementById("financeChart");
 
 const financeChart = new Chart(ctx, {
   type: "doughnut",
   data: {
-    labels: ["Pemasukan", "Pengeluaran", "Tabungan"],
+    labels: [
+      "Pemasukan",
+      "Pengeluaran",
+      "Tabungan",
+      "Dana Darurat",
+      "Investasi",
+    ],
     datasets: [
       {
-        data: [0, 0, 0],
-        backgroundColor: ["#16a34a", "#dc2626", "#2563eb"],
+        data: [0, 0, 0, 0, 0],
+        backgroundColor: [
+          "#16a34a",
+          "#dc2626",
+          "#2563eb",
+          "#0ea5e9",
+          "#8b5cf6",
+        ],
       },
     ],
   },
@@ -66,12 +106,34 @@ function saveLocalStorage() {
   localStorage.setItem("transactions", JSON.stringify(transactions));
 }
 
+function saveDebtLocalStorage() {
+  localStorage.setItem("debts", JSON.stringify(debts));
+}
+
 function formatRupiah(number) {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
     maximumFractionDigits: 0,
   }).format(number);
+}
+
+function getBadgeClass(type) {
+  if (type === "income") return "badge-income";
+  if (type === "expense") return "badge-expense";
+  if (type === "saving") return "badge-saving";
+  if (type === "emergency") return "badge-emergency";
+  if (type === "investment") return "badge-investment";
+  return "badge-saving";
+}
+
+function getTypeLabel(type) {
+  if (type === "income") return "Pemasukan";
+  if (type === "expense") return "Pengeluaran";
+  if (type === "saving") return "Tabungan";
+  if (type === "emergency") return "Dana Darurat";
+  if (type === "investment") return "Investasi";
+  return type;
 }
 
 function renderTransactions(data = transactions) {
@@ -90,14 +152,16 @@ function renderTransactions(data = transactions) {
 
   data.forEach((transaction) => {
     const row = document.createElement("tr");
+    const badgeClass = getBadgeClass(transaction.type);
+    const typeLabel = getTypeLabel(transaction.type);
 
     row.innerHTML = `
-      <td>${transaction.title}</td>
+      <td>${transaction.title}${transaction.auto ? " <small style='opacity:.65;'>[Otomatis]</small>" : ""}</td>
       <td>${transaction.category}</td>
       <td>${transaction.date}</td>
       <td>
-        <span class="badge badge-${transaction.type}">
-          ${transaction.type}
+        <span class="badge ${badgeClass}">
+          ${typeLabel}
         </span>
       </td>
       <td>${formatRupiah(transaction.amount)}</td>
@@ -116,33 +180,92 @@ function renderTransactions(data = transactions) {
   });
 }
 
+function calculateTotal(type) {
+  return transactions
+    .filter((t) => t.type === type)
+    .reduce((acc, item) => acc + item.amount, 0);
+}
+
+function createAutomaticAllocations(incomeTransaction) {
+  const allocations = [
+    {
+      suffix: "auto-emergency",
+      title: "Alokasi Dana Darurat Otomatis",
+      type: "emergency",
+      rate: 0.1,
+    },
+    {
+      suffix: "auto-investment",
+      title: "Alokasi Investasi Otomatis",
+      type: "investment",
+      rate: 0.15,
+    },
+    {
+      suffix: "auto-saving",
+      title: "Alokasi Tabungan Otomatis",
+      type: "saving",
+      rate: 0.15,
+    },
+  ];
+
+  return allocations.map((allocation) => ({
+    id: `${incomeTransaction.id}-${allocation.suffix}`,
+    parentId: incomeTransaction.id,
+    title: allocation.title,
+    amount: Math.round(incomeTransaction.amount * allocation.rate),
+    category: "Alokasi Otomatis",
+    date: incomeTransaction.date,
+    type: allocation.type,
+    auto: true,
+  }));
+}
+
+function ensureAutomaticAllocations(incomeTransaction) {
+  const automaticItems = createAutomaticAllocations(incomeTransaction);
+
+  automaticItems.forEach((autoItem) => {
+    const existingIndex = transactions.findIndex(
+      (item) => item.id === autoItem.id,
+    );
+
+    if (existingIndex >= 0) {
+      transactions[existingIndex] = autoItem;
+    } else {
+      transactions.push(autoItem);
+    }
+  });
+}
+
 function updateDashboard() {
-  const income = transactions
-    .filter((t) => t.type === "income")
-    .reduce((acc, item) => acc + item.amount, 0);
+  const income = calculateTotal("income");
+  const expense = calculateTotal("expense");
+  const saving = calculateTotal("saving");
+  const emergency = calculateTotal("emergency");
+  const investment = calculateTotal("investment");
 
-  const expense = transactions
-    .filter((t) => t.type === "expense")
-    .reduce((acc, item) => acc + item.amount, 0);
-
-  const saving = transactions
-    .filter((t) => t.type === "saving")
-    .reduce((acc, item) => acc + item.amount, 0);
-
-  const balance = income - expense - saving;
+  const balance = income - expense - saving - emergency - investment;
 
   balanceEl.textContent = formatRupiah(balance);
   incomeEl.textContent = formatRupiah(income);
   expenseEl.textContent = formatRupiah(expense);
   savingTotalEl.textContent = formatRupiah(saving);
+  emergencyTotalEl.textContent = formatRupiah(emergency);
+  investmentTotalEl.textContent = formatRupiah(investment);
 
-  financeChart.data.datasets[0].data = [income, expense, saving];
-
+  financeChart.data.datasets[0].data = [
+    income,
+    expense,
+    saving,
+    emergency,
+    investment,
+  ];
   financeChart.update();
 
   renderRecentTransactions();
   updateBudget(expense);
   updateSavingProgress(saving);
+  updateEmergencyProgress(emergency);
+  updateInvestmentProgress(investment);
 }
 
 function renderRecentTransactions() {
@@ -152,6 +275,13 @@ function renderRecentTransactions() {
 
   latest.forEach((item) => {
     const div = document.createElement("div");
+    const sign =
+      item.type === "expense" ||
+      item.type === "saving" ||
+      item.type === "emergency" ||
+      item.type === "investment"
+        ? "-"
+        : "+";
 
     div.classList.add("recent-item");
 
@@ -162,8 +292,7 @@ function renderRecentTransactions() {
       </div>
 
       <strong>
-        ${item.type === "expense" ? "-" : "+"}
-        ${formatRupiah(item.amount)}
+        ${sign} ${formatRupiah(item.amount)}
       </strong>
     `;
 
@@ -194,20 +323,45 @@ transactionForm.addEventListener("submit", function (e) {
     type,
   };
 
+  const originalTransaction = editId
+    ? transactions.find((item) => item.id === editId)
+    : null;
+
+  if (originalTransaction?.auto) {
+    transactionData.auto = true;
+  }
+
+  if (originalTransaction?.parentId) {
+    transactionData.parentId = originalTransaction.parentId;
+  }
+
   if (editId) {
     transactions = transactions.map((item) =>
       item.id === editId ? transactionData : item,
     );
 
-    editId = null;
+    if (
+      originalTransaction &&
+      originalTransaction.type === "income" &&
+      type !== "income"
+    ) {
+      transactions = transactions.filter(
+        (item) => item.id !== editId && item.parentId !== editId,
+      );
+    }
   } else {
     transactions.push(transactionData);
+  }
+
+  if (type === "income") {
+    ensureAutomaticAllocations(transactionData);
   }
 
   saveLocalStorage();
   renderTransactions();
   updateDashboard();
 
+  editId = null;
   transactionForm.reset();
 });
 
@@ -216,7 +370,9 @@ function deleteTransaction(id) {
 
   if (!confirmDelete) return;
 
-  transactions = transactions.filter((item) => item.id !== id);
+  transactions = transactions.filter(
+    (item) => item.id !== id && item.parentId !== id,
+  );
 
   saveLocalStorage();
   renderTransactions();
@@ -335,9 +491,7 @@ saveTargetBtn.addEventListener("click", () => {
 
 function updateSavingProgress(currentSaving = null) {
   if (currentSaving === null) {
-    currentSaving = transactions
-      .filter((t) => t.type === "saving")
-      .reduce((acc, item) => acc + item.amount, 0);
+    currentSaving = calculateTotal("saving");
   }
 
   savingTargetText.textContent = `Target: ${formatRupiah(savingTarget)}`;
@@ -354,17 +508,226 @@ function updateSavingProgress(currentSaving = null) {
   savingProgress.style.width = `${percentage}%`;
   savingPercentage.textContent = `${percentage.toFixed(0)}% tercapai`;
 
-  const monthlySaving = currentSaving || 1;
+  if (currentSaving <= 0) {
+    savingEstimate.textContent = "Estimasi belum tersedia";
+    return;
+  }
 
   const remain = savingTarget - currentSaving;
-
-  const estimateMonth = Math.ceil(remain / monthlySaving);
+  const estimateMonth = Math.ceil(remain / currentSaving);
 
   if (percentage >= 100) {
     savingEstimate.textContent = "🎉 Target tabungan tercapai!";
   } else {
     savingEstimate.textContent = `Estimasi tercapai ${estimateMonth} bulan lagi`;
   }
+}
+
+/* EMERGENCY TARGET */
+
+saveEmergencyTargetBtn.addEventListener("click", () => {
+  emergencyTarget = +emergencyTargetInput.value;
+
+  localStorage.setItem("emergencyTarget", JSON.stringify(emergencyTarget));
+
+  updateEmergencyProgress();
+
+  emergencyTargetInput.value = "";
+});
+
+function updateEmergencyProgress(currentEmergency = null) {
+  if (currentEmergency === null) {
+    currentEmergency = calculateTotal("emergency");
+  }
+
+  emergencyTargetText.textContent = `Target: ${formatRupiah(emergencyTarget)}`;
+
+  if (emergencyTarget <= 0) {
+    emergencyProgress.style.width = "0%";
+    emergencyPercentage.textContent = "0%";
+    emergencyEstimate.textContent = "Belum ada target";
+    return;
+  }
+
+  const percentage = Math.min((currentEmergency / emergencyTarget) * 100, 100);
+
+  emergencyProgress.style.width = `${percentage}%`;
+  emergencyPercentage.textContent = `${percentage.toFixed(0)}% tercapai`;
+
+  if (currentEmergency <= 0) {
+    emergencyEstimate.textContent = "Estimasi belum tersedia";
+    return;
+  }
+
+  const remain = emergencyTarget - currentEmergency;
+  const estimateMonth = Math.ceil(remain / currentEmergency);
+
+  if (percentage >= 100) {
+    emergencyEstimate.textContent = "🎉 Target dana darurat tercapai!";
+  } else {
+    emergencyEstimate.textContent = `Estimasi tercapai ${estimateMonth} bulan lagi`;
+  }
+}
+
+/* INVESTMENT TARGET */
+
+saveInvestmentTargetBtn.addEventListener("click", () => {
+  investmentTarget = +investmentTargetInput.value;
+
+  localStorage.setItem("investmentTarget", JSON.stringify(investmentTarget));
+
+  updateInvestmentProgress();
+
+  investmentTargetInput.value = "";
+});
+
+function updateInvestmentProgress(currentInvestment = null) {
+  if (currentInvestment === null) {
+    currentInvestment = calculateTotal("investment");
+  }
+
+  investmentTargetText.textContent = `Target: ${formatRupiah(investmentTarget)}`;
+
+  if (investmentTarget <= 0) {
+    investmentProgress.style.width = "0%";
+    investmentPercentage.textContent = "0%";
+    investmentEstimate.textContent = "Belum ada target";
+    return;
+  }
+
+  const percentage = Math.min(
+    (currentInvestment / investmentTarget) * 100,
+    100,
+  );
+
+  investmentProgress.style.width = `${percentage}%`;
+  investmentPercentage.textContent = `${percentage.toFixed(0)}% tercapai`;
+
+  if (currentInvestment <= 0) {
+    investmentEstimate.textContent = "Estimasi belum tersedia";
+    return;
+  }
+
+  const remain = investmentTarget - currentInvestment;
+  const estimateMonth = Math.ceil(remain / currentInvestment);
+
+  if (percentage >= 100) {
+    investmentEstimate.textContent = "🎉 Target investasi tercapai!";
+  } else {
+    investmentEstimate.textContent = `Estimasi tercapai ${estimateMonth} bulan lagi`;
+  }
+}
+
+/* DEBT AND PAWN TRACKING */
+
+debtForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+
+  const title = debtTitleInput.value.trim();
+  const partner = debtPartnerInput.value.trim();
+  const amount = +debtAmountInput.value;
+  const type = debtTypeInput.value;
+  const date = debtDateInput.value;
+  const status = debtStatusInput.value;
+
+  if (!title || !partner || !amount || !type || !date) {
+    alert("Semua field hutang/gadai wajib diisi!");
+    return;
+  }
+
+  if (debtEditId) {
+    debts = debts.map((item) =>
+      item.id === debtEditId
+        ? { ...item, title, partner, amount, type, date, status }
+        : item,
+    );
+    debtEditId = null;
+    debtSubmitBtn.innerHTML =
+      '<i class="fa-solid fa-plus"></i> Simpan Hutang/Gadai';
+  } else {
+    debts.push({
+      id: Date.now().toString(),
+      title,
+      partner,
+      amount,
+      type,
+      date,
+      status,
+    });
+  }
+
+  saveDebtLocalStorage();
+  renderDebtList();
+
+  debtForm.reset();
+});
+
+function renderDebtList() {
+  debtList.innerHTML = "";
+
+  if (debts.length === 0) {
+    debtList.innerHTML = `
+      <tr>
+        <td colspan="7" style="text-align:center;">Belum ada pencatatan hutang atau gadai</td>
+      </tr>
+    `;
+    return;
+  }
+
+  debts.forEach((debt) => {
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${debt.title}</td>
+      <td>${debt.partner}</td>
+      <td>${debt.type === "hutang" ? "Hutang" : "Gadai"}</td>
+      <td>${debt.date}</td>
+      <td><span class="badge badge-${debt.type}">${debt.status}</span></td>
+      <td>${formatRupiah(debt.amount)}</td>
+      <td>
+        <button class="action-btn edit-btn" onclick="editDebt('${debt.id}')">
+          <i class="fa-solid fa-pen"></i>
+        </button>
+        <button class="action-btn delete-btn" onclick="deleteDebt('${debt.id}')">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </td>
+    `;
+
+    debtList.appendChild(row);
+  });
+}
+
+function editDebt(id) {
+  const debt = debts.find((item) => item.id === id);
+
+  if (!debt) return;
+
+  debtTitleInput.value = debt.title;
+  debtPartnerInput.value = debt.partner;
+  debtAmountInput.value = debt.amount;
+  debtTypeInput.value = debt.type;
+  debtDateInput.value = debt.date;
+  debtStatusInput.value = debt.status;
+
+  debtEditId = id;
+  debtSubmitBtn.innerHTML =
+    '<i class="fa-solid fa-pen"></i> Perbarui Hutang/Gadai';
+  window.scrollTo({
+    top: document.getElementById("debt-section").offsetTop,
+    behavior: "smooth",
+  });
+}
+
+function deleteDebt(id) {
+  const confirmDelete = confirm("Hapus catatan hutang/gadai ini?");
+
+  if (!confirmDelete) return;
+
+  debts = debts.filter((item) => item.id !== id);
+
+  saveDebtLocalStorage();
+  renderDebtList();
 }
 
 /* DARK MODE */
@@ -394,3 +757,6 @@ renderTransactions();
 updateDashboard();
 updateBudget();
 updateSavingProgress();
+updateEmergencyProgress();
+updateInvestmentProgress();
+renderDebtList();

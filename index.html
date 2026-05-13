@@ -49,8 +49,23 @@
             >
           </li>
           <li>
+            <a href="#emergency-section"
+              ><i class="fa-solid fa-shield-halved"></i> Dana Darurat</a
+            >
+          </li>
+          <li>
+            <a href="#investment-section"
+              ><i class="fa-solid fa-coins"></i> Investasi</a
+            >
+          </li>
+          <li>
             <a href="#saving-section"
               ><i class="fa-solid fa-piggy-bank"></i> Tabungan</a
+            >
+          </li>
+          <li>
+            <a href="#debt-section"
+              ><i class="fa-solid fa-hand-holding-dollar"></i> Hutang & Gadai</a
             >
           </li>
           <li>
@@ -110,6 +125,22 @@
                 <h2 id="savingTotal">Rp 0</h2>
               </div>
               <i class="fa-solid fa-piggy-bank"></i>
+            </div>
+
+            <div class="card stat-card emergency">
+              <div>
+                <h4>Dana Darurat</h4>
+                <h2 id="emergencyTotal">Rp 0</h2>
+              </div>
+              <i class="fa-solid fa-shield-halved"></i>
+            </div>
+
+            <div class="card stat-card investment">
+              <div>
+                <h4>Investasi</h4>
+                <h2 id="investmentTotal">Rp 0</h2>
+              </div>
+              <i class="fa-solid fa-coins"></i>
             </div>
           </div>
 
@@ -182,6 +213,8 @@
                     <option value="income">Pemasukan</option>
                     <option value="expense">Pengeluaran</option>
                     <option value="saving">Tabungan</option>
+                    <option value="emergency">Dana Darurat</option>
+                    <option value="investment">Investasi</option>
                   </select>
                 </div>
               </div>
@@ -227,6 +260,78 @@
           </div>
         </section>
 
+        <!-- EMERGENCY TARGET -->
+        <section id="emergency-section">
+          <div class="card">
+            <div class="card-header">
+              <h3>Target Dana Darurat</h3>
+            </div>
+
+            <div class="saving-grid">
+              <div class="saving-form">
+                <input
+                  type="number"
+                  id="emergencyTargetInput"
+                  placeholder="Target dana darurat"
+                />
+                <button id="saveEmergencyTarget" class="primary-btn">
+                  Simpan Target
+                </button>
+              </div>
+
+              <div class="saving-progress">
+                <h2 id="emergencyTargetText">Rp 0</h2>
+
+                <div class="progress-container">
+                  <div
+                    class="progress-bar emergency"
+                    id="emergencyProgress"
+                  ></div>
+                </div>
+
+                <span id="emergencyPercentage">0%</span>
+                <p id="emergencyEstimate">Estimasi belum tersedia</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- INVESTMENT TARGET -->
+        <section id="investment-section">
+          <div class="card">
+            <div class="card-header">
+              <h3>Target Investasi</h3>
+            </div>
+
+            <div class="saving-grid">
+              <div class="saving-form">
+                <input
+                  type="number"
+                  id="investmentTargetInput"
+                  placeholder="Target investasi"
+                />
+                <button id="saveInvestmentTarget" class="primary-btn">
+                  Simpan Target
+                </button>
+              </div>
+
+              <div class="saving-progress">
+                <h2 id="investmentTargetText">Rp 0</h2>
+
+                <div class="progress-container">
+                  <div
+                    class="progress-bar investment"
+                    id="investmentProgress"
+                  ></div>
+                </div>
+
+                <span id="investmentPercentage">0%</span>
+                <p id="investmentEstimate">Estimasi belum tersedia</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- SAVING TARGET -->
         <section id="saving-section">
           <div class="card">
@@ -256,6 +361,86 @@
                 <span id="savingPercentage">0%</span>
                 <p id="savingEstimate">Estimasi belum tersedia</p>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- DEBT & PAWN -->
+        <section id="debt-section">
+          <div class="card">
+            <div class="card-header">
+              <h3>Hutang & Gadai</h3>
+            </div>
+
+            <form id="debtForm">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Judul</label>
+                  <input
+                    type="text"
+                    id="debtTitle"
+                    placeholder="Contoh: Hutang ke teman"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label>Pihak</label>
+                  <input
+                    type="text"
+                    id="debtPartner"
+                    placeholder="Contoh: Nama orang atau toko"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label>Jumlah</label>
+                  <input type="number" id="debtAmount" placeholder="500000" />
+                </div>
+
+                <div class="form-group">
+                  <label>Jenis</label>
+                  <select id="debtType">
+                    <option value="">Pilih jenis</option>
+                    <option value="hutang">Hutang</option>
+                    <option value="gadai">Gadai</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>Tanggal</label>
+                  <input type="date" id="debtDate" />
+                </div>
+
+                <div class="form-group">
+                  <label>Status</label>
+                  <select id="debtStatus">
+                    <option value="Terbuka">Terbuka</option>
+                    <option value="Lunas">Lunas</option>
+                  </select>
+                </div>
+              </div>
+
+              <button type="submit" class="primary-btn">
+                <i class="fa-solid fa-plus"></i>
+                Simpan Hutang/Gadai
+              </button>
+            </form>
+
+            <div class="table-container" style="margin-top: 20px">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Judul</th>
+                    <th>Pihak</th>
+                    <th>Jenis</th>
+                    <th>Tanggal</th>
+                    <th>Status</th>
+                    <th>Jumlah</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="debtList"></tbody>
+              </table>
             </div>
           </div>
         </section>

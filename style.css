@@ -259,6 +259,14 @@ select {
   transition: 0.5s;
 }
 
+.progress-bar.emergency {
+  background: linear-gradient(90deg, #0ea5e9, #38bdf8);
+}
+
+.progress-bar.investment {
+  background: linear-gradient(90deg, #8b5cf6, #a855f7);
+}
+
 .green {
   background: linear-gradient(90deg, #10b981, #34d399);
 }
@@ -306,6 +314,22 @@ td {
 
 .badge-saving {
   background: #14b8a6;
+}
+
+.badge-emergency {
+  background: #0ea5e9;
+}
+
+.badge-investment {
+  background: #8b5cf6;
+}
+
+.badge-hutang {
+  background: #ef4444;
+}
+
+.badge-gadai {
+  background: #2563eb;
 }
 
 .action-btn {
