@@ -270,6 +270,7 @@ select {
   gap: 15px;
   flex-wrap: wrap;
   margin-bottom: 20px;
+  color: #0f172a;
 }
 
 .table-container {
